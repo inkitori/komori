@@ -45,9 +45,8 @@ import {
     EventShieldReason,
     type UserVerificationStatus,
 } from "matrix-js-sdk/src/crypto-api";
-import { Tooltip } from "@vector-im/compound-web";
 import { uniqueId, uniqBy } from "lodash";
-import { CircleIcon, CheckCircleIcon, ThreadsIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
+import { ThreadsIcon } from "@vector-im/compound-design-tokens/assets/web/icons";
 import {
     useCreateAutoDisposedViewModel,
     DecryptionFailureBodyView,
@@ -70,8 +69,6 @@ import ContextMenu, { aboveLeftOf, aboveRightOf } from "../../structures/Context
 import { objectHasDiff } from "../../../utils/objects";
 import type EditorStateTransfer from "../../../utils/EditorStateTransfer";
 import { type RoomPermalinkCreator } from "../../../utils/permalinks/Permalinks";
-import { StaticNotificationState } from "../../../stores/notifications/StaticNotificationState";
-import NotificationBadge from "./NotificationBadge";
 import type LegacyCallEventGrouper from "../../structures/LegacyCallEventGrouper";
 import { type ComposerInsertPayload } from "../../../dispatcher/payloads/ComposerInsertPayload";
 import { Action } from "../../../dispatcher/actions";
@@ -1027,8 +1024,8 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
             mx_EventTile_isEditing: isEditing,
             mx_EventTile_info: isInfoMessage,
             mx_EventTile_12hr: this.props.isTwelveHour,
-            // Note: we keep the `sending` state class for tests, not for our styles
             mx_EventTile_sending: !isEditing && isSending,
+            mx_EventTile_notSent: !isEditing && this.props.eventSendStatus === EventStatus.NOT_SENT,
             mx_EventTile_highlight: this.shouldHighlight(),
             mx_EventTile_selected: this.state.contextMenu,
             mx_EventTile_continuation:
@@ -1221,9 +1218,7 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
         const ircPadlock = useIRCLayout && !isBubbleMessage && this.renderE2EPadlock();
 
         let msgOption: JSX.Element | undefined;
-        if (this.shouldShowSentReceipt || this.shouldShowSendingReceipt) {
-            msgOption = <SentReceipt messageState={this.props.eventSendStatus} />;
-        } else if (this.props.showReadReceipts) {
+        if (this.props.showReadReceipts) {
             msgOption = (
                 <ReadReceiptGroup
                     readReceipts={this.props.readReceipts ?? []}
@@ -1584,43 +1579,6 @@ function E2ePadlockUnencrypted(): JSX.Element {
 
 function E2ePadlockDecryptionFailure(): JSX.Element {
     return <E2ePadlock title={_t("timeline|undecryptable_tooltip")} icon={E2ePadlockIcon.DecryptionFailure} />;
-}
-
-interface ISentReceiptProps {
-    messageState: EventStatus | undefined;
-}
-
-function SentReceipt({ messageState }: ISentReceiptProps): JSX.Element {
-    const isSent = !messageState || messageState === "sent";
-    const isFailed = messageState === "not_sent";
-
-    let icon: JSX.Element | undefined;
-    let label: string | undefined;
-    if (messageState === "encrypting") {
-        icon = <CircleIcon />;
-        label = _t("timeline|send_state_encrypting");
-    } else if (isSent) {
-        icon = <CheckCircleIcon />;
-        label = _t("timeline|send_state_sent");
-    } else if (isFailed) {
-        icon = <NotificationBadge notification={StaticNotificationState.RED_EXCLAMATION} />;
-        label = _t("timeline|send_state_failed");
-    } else {
-        icon = <CircleIcon />;
-        label = _t("timeline|send_state_sending");
-    }
-
-    return (
-        <div className="mx_EventTile_msgOption">
-            <div className="mx_ReadReceiptGroup">
-                <Tooltip label={label} placement="top-end">
-                    <div className="mx_ReadReceiptGroup_button" role="status">
-                        <span className="mx_ReadReceiptGroup_container">{icon}</span>
-                    </div>
-                </Tooltip>
-            </div>
-        </div>
-    );
 }
 
 /**
