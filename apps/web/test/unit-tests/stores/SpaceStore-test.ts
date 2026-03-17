@@ -550,12 +550,12 @@ describe("SpaceStore", () => {
                     expect(store.isRoomInSpace(space3, invite2)).toBeTruthy();
                 });
 
-                it("spaces contain dms which you have with members of that space", () => {
-                    expect(store.isRoomInSpace(space1, dm1)).toBeTruthy();
+                it("spaces do not contain dms which you have with members of that space by default", () => {
+                    expect(store.isRoomInSpace(space1, dm1)).toBeFalsy();
                     expect(store.isRoomInSpace(space2, dm1)).toBeFalsy();
                     expect(store.isRoomInSpace(space3, dm1)).toBeFalsy();
                     expect(store.isRoomInSpace(space1, dm2)).toBeFalsy();
-                    expect(store.isRoomInSpace(space2, dm2)).toBeTruthy();
+                    expect(store.isRoomInSpace(space2, dm2)).toBeFalsy();
                     expect(store.isRoomInSpace(space3, dm2)).toBeFalsy();
                     expect(store.isRoomInSpace(space1, dm3)).toBeFalsy();
                     expect(store.isRoomInSpace(space2, dm3)).toBeFalsy();
@@ -1363,7 +1363,7 @@ describe("SpaceStore", () => {
         jest.runOnlyPendingTimers();
         expect(SpaceStore.instance.invitedSpaces).toStrictEqual([]);
         expect(SpaceStore.instance.spacePanelSpaces).toStrictEqual([rootSpace]);
-        expect(SpaceStore.instance.isRoomInSpace(space1, dm1)).toBeTruthy();
+        expect(SpaceStore.instance.isRoomInSpace(space1, dm1)).toBeFalsy();
         expect(SpaceStore.instance.isRoomInSpace(MetaSpace.Home, dm1)).toBeTruthy();
         expect(SpaceStore.instance.isRoomInSpace(MetaSpace.Favourites, dm1)).toBeFalsy();
         expect(SpaceStore.instance.isRoomInSpace(MetaSpace.People, dm1)).toBeTruthy();
