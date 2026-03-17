@@ -34,7 +34,7 @@ export default function SenderProfile({ mxEvent, onClick, withTooltip }: IProps)
                 fallbackName: sender ?? "",
                 onClick,
                 member,
-                colored: true,
+                colored: false,
                 emphasizeDisplayName: true,
                 withTooltip,
             }),

@@ -15,9 +15,14 @@ Please see LICENSE files in the repository root for full details.
 
     .mx_DisambiguatedProfile_displayName {
         font: var(--cpd-font-body-md-semibold);
+        font-size: 15px; 
         margin-inline-end: 0;
         /* keeps the height in check, important for the bubble apperance */
         line-height: 1;
+
+        .cpd-theme-dark & {
+            color: #FBFBFB;
+        }
     }
 
     .mx_DisambiguatedProfile_mxid {
