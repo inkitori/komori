@@ -1103,7 +1103,7 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
             avatarSize = "20px";
             needsSenderProfile = true;
         } else {
-            avatarSize = "30px";
+            avatarSize = "40px";
             needsSenderProfile = true;
         }
 
