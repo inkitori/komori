@@ -1170,10 +1170,11 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
             !this.props.hideTimestamp &&
             (this.props.alwaysShowTimestamps ||
                 this.props.last ||
-                this.state.hover ||
-                this.state.focusWithin ||
-                this.state.actionBarFocused ||
-                Boolean(this.state.contextMenu));
+                (isContinuation &&
+                    (this.state.hover ||
+                        this.state.focusWithin ||
+                        this.state.actionBarFocused ||
+                        Boolean(this.state.contextMenu))));
 
         // Thread panel shows the timestamp of the last reply in that thread
         let ts =
