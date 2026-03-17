@@ -741,17 +741,7 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
     };
 
     private onPermalinkClicked = (e: MouseEvent): void => {
-        // This allows the permalink to be opened in a new tab/window or copied as
-        // matrix.to, but also for it to enable routing within Element when clicked.
         e.preventDefault();
-        dis.dispatch<ViewRoomPayload>({
-            action: Action.ViewRoom,
-            event_id: this.props.mxEvent.getId(),
-            highlighted: true,
-            room_id: this.props.mxEvent.getRoomId(),
-            metricsTrigger:
-                this.context.timelineRenderingType === TimelineRenderingType.Search ? "MessageSearch" : undefined,
-        });
     };
 
     private renderE2EPadlock(): ReactNode {
@@ -924,6 +914,7 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
         this.setState({
             contextMenu: undefined,
             actionBarFocused: false,
+            hover: false,
         });
     };
 
@@ -1039,7 +1030,7 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
             // Note: we keep the `sending` state class for tests, not for our styles
             mx_EventTile_sending: !isEditing && isSending,
             mx_EventTile_highlight: this.shouldHighlight(),
-            mx_EventTile_selected: this.props.isSelectedEvent || this.state.contextMenu,
+            mx_EventTile_selected: this.state.contextMenu,
             mx_EventTile_continuation:
                 isContinuation || eventType === EventType.CallInvite || ElementCallEventType.matches(eventType),
             mx_EventTile_last: this.props.last,
@@ -1168,12 +1159,7 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
         const showTimestamp =
             this.props.mxEvent.getTs() &&
             !this.props.hideTimestamp &&
-            (this.props.alwaysShowTimestamps ||
-                this.props.last ||
-                this.state.hover ||
-                this.state.focusWithin ||
-                this.state.actionBarFocused ||
-                Boolean(this.state.contextMenu));
+            (this.props.alwaysShowTimestamps || this.state.hover);
 
         // Thread panel shows the timestamp of the last reply in that thread
         let ts =
@@ -1206,7 +1192,7 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
         const dummyTimestamp = useIRCLayout ? <span className="mx_MessageTimestamp" /> : null;
         const timestamp = showTimestamp && ts ? messageTimestamp : dummyTimestamp;
         const linkedTimestamp =
-            timestamp !== dummyTimestamp && !this.props.hideTimestamp ? linkedMessageTimestamp : dummyTimestamp;
+            showTimestamp && ts != null && !this.props.hideTimestamp ? linkedMessageTimestamp : dummyTimestamp;
 
         let pinnedMessageBadge: JSX.Element | undefined;
         if (PinningUtils.isPinned(MatrixClientPeg.safeGet(), this.props.mxEvent)) {
@@ -1227,7 +1213,9 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
         // If we have reactions or a pinned message badge, we need a footer
         const hasFooter = Boolean((reactionsRow && this.state.reactions) || pinnedMessageBadge);
 
-        const groupTimestamp = !useIRCLayout ? linkedTimestamp : null;
+        const showFirstInBlock = !useIRCLayout && !this.props.continuation && !!sender;
+        const groupTimestampAfterSender =
+            showFirstInBlock && ts != null && !this.props.hideTimestamp ? linkedMessageTimestamp : null;
         const ircTimestamp = useIRCLayout ? linkedTimestamp : null;
         const groupPadlock = !useIRCLayout && !isBubbleMessage && this.renderE2EPadlock();
         const ircPadlock = useIRCLayout && !isBubbleMessage && this.renderE2EPadlock();
@@ -1289,44 +1277,60 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
                         "onFocus": () => this.setState({ focusWithin: true }),
                         "onBlur": () => this.setState({ focusWithin: false }),
                     },
-                    [
-                        <div className="mx_EventTile_senderDetails" key="mx_EventTile_senderDetails">
-                            {avatar}
-                            {sender}
-                        </div>,
-                        <div
-                            id={this.id}
-                            className={lineClasses}
-                            key="mx_EventTile_line"
-                            onContextMenu={this.onContextMenu}
-                        >
-                            {this.renderContextMenu()}
-                            {replyChain}
-                            {renderTile(TimelineRenderingType.Thread, {
-                                ...this.props,
-
-                                // overrides
-                                ref: this.tile,
-                                isSeeingThroughMessageHiddenForModeration,
-
-                                // appease TS
-                                highlights: this.props.highlights,
-                                highlightLink: this.props.highlightLink,
-                                permalinkCreator: this.props.permalinkCreator!,
-                                showHiddenEvents: this.context.showHiddenEvents,
-                            })}
-                            {actionBar}
-                            {linkedTimestamp}
-                            {msgOption}
-                        </div>,
-                        hasFooter && (
-                            <div className="mx_EventTile_footer" key="mx_EventTile_footer">
-                                {(this.props.layout === Layout.Group || !isOwnEvent) && pinnedMessageBadge}
-                                {reactionsRow}
-                                {this.props.layout === Layout.Bubble && isOwnEvent && pinnedMessageBadge}
+                    (() => {
+                        const threadLineDiv = (
+                            <div
+                                id={this.id}
+                                className={lineClasses}
+                                key="mx_EventTile_line"
+                                onContextMenu={this.onContextMenu}
+                            >
+                                {this.renderContextMenu()}
+                                {!showFirstInBlock && linkedTimestamp}
+                                {replyChain}
+                                {renderTile(TimelineRenderingType.Thread, {
+                                    ...this.props,
+                                    ref: this.tile,
+                                    isSeeingThroughMessageHiddenForModeration,
+                                    highlights: this.props.highlights,
+                                    highlightLink: this.props.highlightLink,
+                                    permalinkCreator: this.props.permalinkCreator!,
+                                    showHiddenEvents: this.context.showHiddenEvents,
+                                })}
+                                {actionBar}
+                                {msgOption}
                             </div>
-                        ),
-                    ],
+                        );
+                        return [
+                            showFirstInBlock ? (
+                                <div className="mx_EventTile_firstMessageBlock" key="mx_EventTile_firstMessageBlock">
+                                    {avatar}
+                                    <div className="mx_EventTile_firstMessageContent">
+                                        <div className="mx_EventTile_senderDetails" key="mx_EventTile_senderDetails">
+                                            {sender}
+                                            {groupTimestampAfterSender}
+                                        </div>
+                                        {threadLineDiv}
+                                    </div>
+                                </div>
+                            ) : (
+                                <React.Fragment key="mx_EventTile_threadDefault">
+                                    <div className="mx_EventTile_senderDetails" key="mx_EventTile_senderDetails">
+                                        {avatar}
+                                        {sender}
+                                    </div>
+                                    {threadLineDiv}
+                                </React.Fragment>
+                            ),
+                            hasFooter && (
+                                <div className="mx_EventTile_footer" key="mx_EventTile_footer">
+                                    {(this.props.layout === Layout.Group || !isOwnEvent) && pinnedMessageBadge}
+                                    {reactionsRow}
+                                    {this.props.layout === Layout.Bubble && isOwnEvent && pinnedMessageBadge}
+                                </div>
+                            ),
+                        ];
+                    })(),
                 );
             }
             case TimelineRenderingType.Notification:
@@ -1486,45 +1490,64 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
                     },
                     <>
                         {ircTimestamp}
-                        {sender}
-                        {ircPadlock}
-                        {avatar}
-                        <div
-                            id={this.id}
-                            className={lineClasses}
-                            key="mx_EventTile_line"
-                            onContextMenu={this.onContextMenu}
-                        >
-                            {this.renderContextMenu()}
-                            {groupTimestamp}
-                            {groupPadlock}
-                            {replyChain}
-                            {renderTile(this.context.timelineRenderingType, {
-                                ...this.props,
-
-                                // overrides
-                                ref: this.tile,
-                                isSeeingThroughMessageHiddenForModeration,
-
-                                // appease TS
-                                highlights: this.props.highlights,
-                                highlightLink: this.props.highlightLink,
-                                permalinkCreator: this.props.permalinkCreator,
-                                showHiddenEvents: this.context.showHiddenEvents,
-                            })}
-                            {actionBar}
-                            {this.props.layout === Layout.IRC && (
-                                <>
-                                    {hasFooter && (
-                                        <div className="mx_EventTile_footer">
-                                            {pinnedMessageBadge}
-                                            {reactionsRow}
-                                        </div>
+                        {(() => {
+                            const lineDiv = (
+                                <div
+                                    id={this.id}
+                                    className={lineClasses}
+                                    key="mx_EventTile_line"
+                                    onContextMenu={this.onContextMenu}
+                                >
+                                    {this.renderContextMenu()}
+                                    {!showFirstInBlock && linkedTimestamp}
+                                    {groupPadlock}
+                                    {replyChain}
+                                    {renderTile(this.context.timelineRenderingType, {
+                                        ...this.props,
+                                        ref: this.tile,
+                                        isSeeingThroughMessageHiddenForModeration,
+                                        highlights: this.props.highlights,
+                                        highlightLink: this.props.highlightLink,
+                                        permalinkCreator: this.props.permalinkCreator,
+                                        showHiddenEvents: this.context.showHiddenEvents,
+                                    })}
+                                    {actionBar}
+                                    {useIRCLayout && (
+                                        <>
+                                            {hasFooter && (
+                                                <div className="mx_EventTile_footer">
+                                                    {pinnedMessageBadge}
+                                                    {reactionsRow}
+                                                </div>
+                                            )}
+                                            {this.renderThreadInfo()}
+                                        </>
                                     )}
-                                    {this.renderThreadInfo()}
+                                </div>
+                            );
+                            if (showFirstInBlock) {
+                                return (
+                                    <div className="mx_EventTile_firstMessageBlock" key="mx_EventTile_firstMessageBlock">
+                                        {avatar}
+                                        <div className="mx_EventTile_firstMessageContent">
+                                            <div className="mx_EventTile_senderDetails" key="mx_EventTile_senderDetails">
+                                                {sender}
+                                                {groupTimestampAfterSender}
+                                            </div>
+                                            {lineDiv}
+                                        </div>
+                                    </div>
+                                );
+                            }
+                            return (
+                                <>
+                                    {sender}
+                                    {ircPadlock}
+                                    {avatar}
+                                    {lineDiv}
                                 </>
-                            )}
-                        </div>
+                            );
+                        })()}
                         {this.props.layout !== Layout.IRC && (
                             <>
                                 {hasFooter && (
