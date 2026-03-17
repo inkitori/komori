@@ -65,10 +65,10 @@ Please see LICENSE files in the repository root for full details.
 
     &.mx_EventTile_highlight {
         .mx_EventTile_avatar {
-            border-color: $event-highlight-bg-color;
+            border-color: transparent;
         }
         &::before {
-            background-color: $event-highlight-bg-color;
+            background-color: transparent;
         }
     }
 
@@ -97,12 +97,12 @@ Please see LICENSE files in the repository root for full details.
     &:hover,
     &.mx_EventTile_selected {
         &::before {
-            background: $eventbubble-bg-hover;
+            background: transparent;
         }
 
         .mx_EventTile_avatar {
             img {
-                box-shadow: 0 0 0 3px $eventbubble-bg-hover;
+                box-shadow: 0 0 0 3px transparent;
             }
         }
     }
