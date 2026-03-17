@@ -188,7 +188,7 @@ function useThemes(): Array<ITheme & { isDark: boolean }> {
         // Check if the themes are dark
         return allThemes.map((theme) => {
             const customTheme = customThemeMap.get(theme.name);
-            const isDark = (customTheme ? customTheme.is_dark : theme.id.includes("dark")) || false;
+            const isDark = (customTheme ? customTheme.is_dark : theme.id.includes("dark") || theme.id === "discord") || false;
             return { ...theme, isDark };
         });
     }, [customThemes]);

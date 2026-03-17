@@ -133,7 +133,7 @@ export default class ThemeWatcher extends TypedEventEmitter<ThemeWatcherEvent, T
         if (theme.startsWith("custom-")) {
             return !!getCustomTheme(theme.substring("custom-".length)).is_dark;
         }
-        return theme === "dark" || theme === "dark-hc";
+        return theme === "dark" || theme === "dark-hc" || theme === "discord";
     }
 
     private themeBasedOnSystem(): string | undefined {

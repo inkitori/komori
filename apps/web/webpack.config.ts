@@ -63,6 +63,7 @@ const cssThemes = {
     "theme-dark": "./res/themes/dark/css/dark.pcss",
     "theme-light-custom": "./res/themes/light-custom/css/light-custom.pcss",
     "theme-dark-custom": "./res/themes/dark-custom/css/dark-custom.pcss",
+    "theme-discord": "./res/themes/discord/css/discord.pcss",
 };
 
 // See docs/customisations.md
@@ -216,14 +217,14 @@ export default (env: string, argv: Record<string, any>): webpack.Configuration =
             minimize: enableMinification,
             minimizer: enableMinification
                 ? [
-                      new TerserPlugin({
-                          // Already minified and includes an auto-generated license comment
-                          // that the plugin would otherwise pointlessly extract into a separate
-                          // file. We add the actual license using CopyWebpackPlugin below.
-                          exclude: "jitsi_external_api.min.js",
-                      }),
-                      new CssMinimizerPlugin(),
-                  ]
+                    new TerserPlugin({
+                        // Already minified and includes an auto-generated license comment
+                        // that the plugin would otherwise pointlessly extract into a separate
+                        // file. We add the actual license using CopyWebpackPlugin below.
+                        exclude: "jitsi_external_api.min.js",
+                    }),
+                    new CssMinimizerPlugin(),
+                ]
                 : [],
 
             // Set the value of `process.env.NODE_ENV` for libraries like React
