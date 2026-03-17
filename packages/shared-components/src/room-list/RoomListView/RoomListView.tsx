@@ -100,13 +100,13 @@ export const RoomListView: React.FC<RoomListViewProps> = ({ vm, renderAvatar, on
 
     return (
         <>
-            <div>
+            {/* <div>
                 <RoomListPrimaryFilters
                     filterIds={snapshot.filterIds}
                     activeFilterId={snapshot.activeFilterId}
                     onToggleFilter={vm.onToggleFilter}
                 />
-            </div>
+            </div> */}
             {listBody}
         </>
     );
