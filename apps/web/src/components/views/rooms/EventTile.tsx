@@ -1507,6 +1507,7 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
                                         showHiddenEvents: this.context.showHiddenEvents,
                                     })}
                                     {actionBar}
+                                    {msgOption}
                                     {useIRCLayout && (
                                         <>
                                             {hasFooter && (
@@ -1555,7 +1556,6 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
                                 {this.renderThreadInfo()}
                             </>
                         )}
-                        {msgOption}
                     </>,
                 );
             }

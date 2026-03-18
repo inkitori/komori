@@ -229,6 +229,9 @@ Please see LICENSE files in the repository root for full details.
     .mx_EventTile_footer {
         margin: var(--cpd-space-1-5x) 0;
         margin-inline: var(--EventTile_bubble_line-margin-inline-start) var(--EventTile_bubble_line-margin-inline-end);
+
+        /* Used by hover highlight ::before to cover gap between message and reactions */
+        --EventTile_footer-highlight-extend-block-start: var(--cpd-space-1-5x);
     }
 
     &[data-self="false"] {
