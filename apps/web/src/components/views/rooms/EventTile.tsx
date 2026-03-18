@@ -1169,6 +1169,7 @@ export class UnwrappedEventTile extends React.Component<EventTileProps, IState> 
             this.props.mxEvent.getTs() &&
             !this.props.hideTimestamp &&
             (this.props.alwaysShowTimestamps ||
+                this.props.last ||
                 (isContinuation &&
                     (this.state.hover ||
                         this.state.focusWithin ||
